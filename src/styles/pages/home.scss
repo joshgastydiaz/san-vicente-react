@@ -1,0 +1,142 @@
+.homepage {
+  background-color: #f9fafb;
+  font-family: 'Inter', sans-serif;
+
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+
+  .hero {
+    background-color: #fff;
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+
+    .hero-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3rem;
+
+      @media (min-width: 1024px) {
+        flex-direction: row;
+        justify-content: space-between;
+      }
+    }
+
+    .hero-text {
+      text-align: center;
+
+      @media (min-width: 1024px) {
+        text-align: left;
+        flex: 1;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        line-height: 1.2;
+        color: #1f2937;
+          margin-left: 2rem;
+
+        span.highlight {
+          color: #3b82f6;
+        }
+      }
+
+      p {
+        margin-top: 1rem;
+        font-size: 1.125rem;
+        color: #6b7280;
+        max-width: 36rem;
+        margin-left: auto;
+        margin-right: auto;
+      }
+    }
+
+    .hero-buttons {
+      margin-top: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+       margin-left: 10rem;
+      justify-content: center;
+
+      @media (min-width: 1024px) {
+        justify-content: flex-start;
+      }
+
+      .primary,
+      .secondary {
+        font-weight: 600;
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      .primary {
+        background-color: #3b82f6;
+        color: #fff;
+
+        &:hover {
+          background-color: #2563eb;
+        }
+      }
+
+      .secondary {
+        background-color: #dbeafe;
+        color: #1d4ed8;
+
+        &:hover {
+          background-color: #bfdbfe;
+        }
+      }
+    }
+
+    .hero-image {
+      max-width: 500px;
+      width: 100%;
+      flex: 1;
+
+      img {
+        width: 100%;
+        height: auto;
+        border-left: 4px solid #3b82f6;
+        border-radius: 0.5rem;
+        object-fit: cover;
+      }
+    }
+  }
+
+  .announcements {
+    background-color: #f9fafb;
+    text-align: center;
+
+    .section-title {
+      margin-bottom: 2rem;
+
+      h2 {
+        color: #3b82f6;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.875rem;
+      }
+
+      p {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1f2937;
+      }
+    }
+
+    .announcement-grid {
+      display: grid;
+      gap: 2rem;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      text-align: left;
+    }
+  }
+}
