@@ -1,0 +1,74 @@
+// src/styles/pages/AuthPage.scss
+
+.auth-page {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; // <-- Align to top
+  min-height: 100vh;
+  padding-top: 5rem; // <-- Add top space
+  background-color: #f5f6fa;
+
+  &__container {
+    width: 100%;
+    max-width: 540px; // <-- Increased width
+  }
+
+  &__title {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: #2c3e50;
+  }
+
+  &__card {
+    padding: 2.5rem; // <-- Bigger card padding
+    background-color: #fff;
+    border-radius: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem; // <-- Slightly more spacing
+  }
+
+  &__input {
+    padding: 1rem; // <-- Bigger input
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 0.5rem;
+    transition: border-color 0.2s ease;
+
+    &:focus {
+      outline: none;
+      border-color: #3498db;
+    }
+  }
+
+  &__error {
+    color: #e74c3c;
+    font-size: 0.875rem;
+    margin-top: -0.5rem;
+  }
+
+  &__toggle {
+    margin-top: 1.5rem;
+    text-align: center;
+  }
+
+  &__toggle-link {
+    background: none;
+    border: none;
+    color: #3498db;
+    cursor: pointer;
+    font-size: 0.95rem;
+    padding: 0;
+    font-weight: 500;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}

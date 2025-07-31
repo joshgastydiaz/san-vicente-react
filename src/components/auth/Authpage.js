@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { auth, db } from '../../firebase'; 
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
@@ -5,7 +6,7 @@ import { setDoc, doc } from 'firebase/firestore';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 
-// The component receives `{ setPage }` as a prop from App.js
+
 export default function AuthPage({ setPage }) {
     const [isLogin, setIsLogin] = useState(true);
     const [error, setError] = useState('');
@@ -19,7 +20,6 @@ export default function AuthPage({ setPage }) {
         const password = e.target.password.value;
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            // This line will now work correctly because setPage is a valid function
             setPage('home');
         } catch (err) {
             setError(err.message);
@@ -57,29 +57,27 @@ export default function AuthPage({ setPage }) {
 
     return (
         <div className="auth-page">
-            <div className="auth-container">
-                <h2 className="auth-title">
+            <div className="auth-page__container">
+                <h2 className="auth-page__title">
                     {isLogin ? 'Sign in to your account' : 'Create a new account'}
                 </h2>
-                <Card className="auth-card">
-                    <form className="auth-form" onSubmit={isLogin ? handleLogin : handleRegister}>
+                <Card className="auth-page__card">
+                    <form className="auth-page__form" onSubmit={isLogin ? handleLogin : handleRegister}>
                         {!isLogin && (
-                             <input name="fullname" type="text" required className="auth-input" placeholder="Full Name" />
+                            <input name="fullname" type="text" required className="auth-page__input" placeholder="Full Name" />
                         )}
-                        <input id="email-address" name="email" type="email" autoComplete="email" required className="auth-input" placeholder="Email address" />
+                        <input name="email" type="email" required className="auth-page__input" placeholder="Email address" />
                         {!isLogin && (
-                             <input name="address" type="text" required className="auth-input" placeholder="Address" />
+                            <input name="address" type="text" required className="auth-page__input" placeholder="Address" />
                         )}
-                        <input id="password" name="password" type="password" autoComplete="current-password" required className="auth-input" placeholder="Password" />
-                        
-                        {error && <p className="auth-error">{error}</p>}
-
-                        <Button type="submit" className="btn--full-width" disabled={loading}>
+                        <input name="password" type="password" required className="auth-page__input" placeholder="Password" />
+                        {error && <p className="auth-page__error">{error}</p>}
+                        <Button type="submit" className="w-full" disabled={loading}>
                             {loading ? 'Processing...' : (isLogin ? 'Sign in' : 'Register')}
                         </Button>
                     </form>
-                    <div className="auth-toggle">
-                        <button onClick={() => {setIsLogin(!isLogin); setError('');}} className="auth-toggle-link">
+                    <div className="auth-page__toggle">
+                        <button onClick={() => { setIsLogin(!isLogin); setError(''); }} className="auth-page__toggle-link">
                             {isLogin ? "Don't have an account? Sign Up" : 'Already have an account? Sign In'}
                         </button>
                     </div>
@@ -87,4 +85,4 @@ export default function AuthPage({ setPage }) {
             </div>
         </div>
     );
-};
+}

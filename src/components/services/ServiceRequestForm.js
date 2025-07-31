@@ -3,6 +3,7 @@ import { db } from '../../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
+import '../../styles/pages/service-request-form.scss'; // ← Import the SCSS here
 
 export default function ServiceRequestForm({ user, serviceTitle, collectionName, fields, setPage }) {
     const [loading, setLoading] = useState(false);
@@ -35,22 +36,30 @@ export default function ServiceRequestForm({ user, serviceTitle, collectionName,
     };
 
     return (
-        <div className="container mx-auto p-8">
-            <h2 className="text-4xl font-bold text-center mb-12">{serviceTitle}</h2>
+        <div className="service-request container mx-auto p-8">
+            <h2 className="service-request__title">{serviceTitle}</h2>
             <Card className="max-w-2xl mx-auto">
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="service-request__form">
                     {fields.map(field => (
-                        <div key={field.name}>
-                            <label htmlFor={field.name} className="block text-sm font-medium text-gray-700">{field.label}</label>
-                            {field.type === 'textarea' ? (<textarea id={field.name} name={field.name} rows="4" required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"></textarea>) 
-                            : field.type === 'select' ? (<select id={field.name} name={field.name} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2">{field.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}</select>) 
-                            : (<input type={field.type} id={field.name} name={field.name} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" />)}
+                        <div key={field.name} className="service-request__field">
+                            <label htmlFor={field.name}>{field.label}</label>
+                            {field.type === 'textarea' ? (
+                                <textarea id={field.name} name={field.name} rows="4" required />
+                            ) : field.type === 'select' ? (
+                                <select id={field.name} name={field.name} required>
+                                    {field.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                                </select>
+                            ) : (
+                                <input type={field.type} id={field.name} name={field.name} required />
+                            )}
                         </div>
                     ))}
-                    {error && <p className="text-red-500 text-sm">{error}</p>}
-                    <Button type="submit" className="w-full" disabled={loading}>{loading ? 'Submitting...' : 'Submit'}</Button>
+                    {error && <p className="service-request__error">{error}</p>}
+                    <Button type="submit" className="service-request__submit" disabled={loading}>
+                        {loading ? 'Submitting...' : 'Submit'}
+                    </Button>
                 </form>
             </Card>
         </div>
     );
-};
+}
