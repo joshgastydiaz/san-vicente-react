@@ -5,6 +5,9 @@ import { setDoc, doc } from 'firebase/firestore';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 
+const t = (x) => x;
+
+
 export default function AuthPage({ setPage }) {
     const [isLogin, setIsLogin] = useState(true);
     const [error, setError] = useState('');

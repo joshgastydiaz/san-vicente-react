@@ -67,10 +67,13 @@ export default function App() {
             case 'submitSuggestion':
                  return isLoggedIn ? <ServiceRequestForm user={currentUser} serviceTitle="Submit a Suggestion" collectionName="suggestions" fields={[{name: 'subject', label: 'Subject', type: 'text'}, {name: 'suggestion', label: 'Suggestion/Feedback', type: 'textarea'}]} setPage={setPage} /> : <AuthPage setPage={setPage} />;
 
-            // This is the security check. If you are not a logged-in admin, it sends you to the Home Page.
+          
             case 'adminDashboard':
-                return (isLoggedIn && userType === 'admin') ? <AdminDashboard /> : <HomePage setPage={setPage} />;
-            
+            return (isLoggedIn && userType === 'admin') 
+                 ? <AdminDashboard setPage={setPage} /> 
+                : <HomePage setPage={setPage} />;
+
+                
             default: return <HomePage setPage={setPage} />;
         }
     };

@@ -22,6 +22,8 @@ const getFriendlyAuthError = (errorCode) => {
     }
 };
 
+
+
 export default function AuthPage({ setPage }) {
     const [isLogin, setIsLogin] = useState(true);
     const [error, setError] = useState('');
