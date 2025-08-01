@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { auth, db } from '../../firebase'; 
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { setDoc, doc } from 'firebase/firestore';
+import { setDoc, doc, getDoc } from 'firebase/firestore';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 
@@ -22,7 +22,6 @@ const getFriendlyAuthError = (errorCode) => {
     }
 };
 
-// This component correctly receives the { setPage } prop from App.js
 export default function AuthPage({ setPage }) {
     const [isLogin, setIsLogin] = useState(true);
     const [error, setError] = useState('');
@@ -34,14 +33,22 @@ export default function AuthPage({ setPage }) {
         setError('');
         const email = e.target.email.value;
         const password = e.target.password.value;
+
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
-            if (user.email === 'josh_admin@sanvicente.com') {
-                setPage('adminDashboard');
+            const userDocRef = doc(db, 'users', user.uid);
+            const userDocSnap = await getDoc(userDocRef);
+
+            if (userDocSnap.exists()) {
+                const role = userDocSnap.data().role;
+                console.log("Logged in role:", role);
+
+                // ✅ Instead of setPage(), reload to trigger App.js to route properly
+                window.location.reload();
             } else {
-                setPage('home');
+                setError('User profile not found.');
             }
         } catch (err) {
             setError(getFriendlyAuthError(err.code));
@@ -58,9 +65,11 @@ export default function AuthPage({ setPage }) {
         const email = e.target.email.value;
         const password = e.target.password.value;
         const address = e.target.address.value;
+
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
+
             await setDoc(doc(db, "users", user.uid), {
                 uid: user.uid,
                 fullName,
@@ -68,6 +77,7 @@ export default function AuthPage({ setPage }) {
                 address,
                 role: 'resident'
             });
+
             alert("Registration successful! Please log in.");
             setIsLogin(true);
         } catch (err) {

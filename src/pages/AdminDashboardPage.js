@@ -1,57 +1,66 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '../../firebase'; 
-import { collection, query, onSnapshot, doc, updateDoc, addDoc, deleteDoc, serverTimestamp, orderBy } from 'firebase/firestore';
-import { Card } from '../common/Card';
-import { Button } from '../common/Button';
+import { db } from '../firebase';
+import {
+    collection,
+    query,
+    onSnapshot,
+    doc,
+    updateDoc,
+    addDoc,
+    deleteDoc,
+    serverTimestamp,
+    orderBy
+} from 'firebase/firestore';
+import { Card } from '../components/common/Card';
+import { Button } from '../components/common/Button';
 
-// A reusable component for each section of the dashboard
 const DashboardSection = ({ title, children }) => (
     <Card>
         <h3 className="dashboard-section__title">{title}</h3>
-        <div className="dashboard-section__content">
-            {children}
-        </div>
+        <div className="dashboard-section__content">{children}</div>
     </Card>
 );
 
-export default function AdminDashboard() {
+export default function AdminDashboardPage() {
     const [documentRequests, setDocumentRequests] = useState([]);
     const [incidentReports, setIncidentReports] = useState([]);
     const [suggestions, setSuggestions] = useState([]);
-    const [announcements, setAnnouncements] = useState([]); // State for announcements
-    
+    const [announcements, setAnnouncements] = useState([]);
     const [newAnnouncement, setNewAnnouncement] = useState({ title: '', content: '' });
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        const collections = {
-            documentRequests: setDocumentRequests,
-            incidentReports: setIncidentReports,
-            suggestions: setSuggestions,
-            announcements: setAnnouncements, // Fetch announcements
+        const setupCollection = (collectionName, setter, sortBySubmittedAt = true) => {
+            const colRef = collection(db, collectionName);
+            const q = sortBySubmittedAt ? query(colRef, orderBy('submittedAt', 'desc')) : colRef;
+            return onSnapshot(q, (snapshot) => {
+                const data = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                setter(data);
+            });
         };
 
-        const unsubscribes = Object.entries(collections).map(([collectionName, setter]) => {
-            const q = query(collection(db, collectionName), orderBy('submittedAt', 'desc'));
-            return onSnapshot(q, (querySnapshot) => {
-                const items = [];
-                querySnapshot.forEach((doc) => {
-                    items.push({ id: doc.id, ...doc.data() });
-                });
-                setter(items);
-            });
-        });
+        const unsubDoc = setupCollection('documentRequests', setDocumentRequests);
+        const unsubReports = setupCollection('incidentReports', setIncidentReports);
+        const unsubSugg = setupCollection('suggestions', setSuggestions);
+        const unsubAnn = setupCollection('announcements', setAnnouncements, false);
 
-        return () => unsubscribes.forEach(unsub => unsub());
+        return () => {
+            unsubDoc();
+            unsubReports();
+            unsubSugg();
+            unsubAnn();
+        };
     }, []);
 
     const handleUpdateRequestStatus = async (id, newStatus) => {
-        const requestDocRef = doc(db, 'documentRequests', id);
         try {
-            await updateDoc(requestDocRef, { status: newStatus });
+            await updateDoc(doc(db, 'documentRequests', id), { status: newStatus });
             alert(`Request status updated to "${newStatus}"`);
         } catch (error) {
-            console.error("Error updating document status: ", error);
+            console.error("Error updating document status:", error);
             alert("Failed to update status.");
         }
     };
@@ -65,39 +74,39 @@ export default function AdminDashboard() {
         setLoading(true);
         try {
             await addDoc(collection(db, 'announcements'), {
-                title: newAnnouncement.title,
-                content: newAnnouncement.content,
+                ...newAnnouncement,
                 date: serverTimestamp(),
                 submittedAt: serverTimestamp()
             });
             setNewAnnouncement({ title: '', content: '' });
             alert("Announcement posted successfully!");
         } catch (error) {
-            console.error("Error creating announcement: ", error);
+            console.error("Error creating announcement:", error);
             alert("Failed to post announcement.");
         } finally {
             setLoading(false);
         }
     };
 
-    // ** NEW FUNCTION TO DELETE ANNOUNCEMENTS **
     const handleDeleteAnnouncement = async (id) => {
-        // Ask for confirmation before deleting
         if (window.confirm("Are you sure you want to delete this announcement?")) {
-            const announcementDocRef = doc(db, 'announcements', id);
             try {
-                await deleteDoc(announcementDocRef);
+                await deleteDoc(doc(db, 'announcements', id));
                 alert("Announcement deleted successfully.");
             } catch (error) {
-                console.error("Error deleting announcement: ", error);
+                console.error("Error deleting announcement:", error);
                 alert("Failed to delete announcement.");
             }
         }
     };
 
-    const pendingRequestsCount = documentRequests.filter(req => req.status === 'Pending').length;
-    const newReportsCount = incidentReports.length;
-    const newSuggestionsCount = suggestions.length;
+    const formatDate = (dateField) => {
+        if (dateField instanceof Date) return dateField.toLocaleDateString();
+        if (dateField?.toDate instanceof Function) return dateField.toDate().toLocaleDateString();
+        return '—';
+    };
+
+    const fallbackEmail = (data) => data?.userEmail || data?.email || '—';
 
     return (
         <div className="container">
@@ -107,37 +116,59 @@ export default function AdminDashboard() {
             </header>
 
             <div className="stats-grid">
-                <Card className="stat-card stat-card--pending"><h3>Pending Requests</h3><p>{pendingRequestsCount}</p></Card>
-                <Card className="stat-card stat-card--reports"><h3>New Incident Reports</h3><p>{newReportsCount}</p></Card>
-                <Card className="stat-card stat-card--suggestions"><h3>New Suggestions</h3><p>{newSuggestionsCount}</p></Card>
+                <Card className="stat-card stat-card--pending">
+                    <h3>Pending Requests</h3>
+                    <p>{documentRequests.filter(req => req.status === 'Pending').length}</p>
+                </Card>
+                <Card className="stat-card stat-card--reports">
+                    <h3>Incident Reports</h3>
+                    <p>{incidentReports.length}</p>
+                </Card>
+                <Card className="stat-card stat-card--suggestions">
+                    <h3>Suggestions</h3>
+                    <p>{suggestions.length}</p>
+                </Card>
             </div>
 
             <div className="dashboard-content">
                 <DashboardSection title="Manage Announcements">
                     <form onSubmit={handleCreateAnnouncement} className="announcement-form">
                         <h4>Create New Announcement</h4>
-                        <div className="form-group"><input type="text" placeholder="Title" value={newAnnouncement.title} onChange={(e) => setNewAnnouncement({ ...newAnnouncement, title: e.target.value })} className="form-input"/></div>
-                        <div className="form-group"><textarea placeholder="Content" value={newAnnouncement.content} onChange={(e) => setNewAnnouncement({ ...newAnnouncement, content: e.target.value })} className="form-input" rows="4"></textarea></div>
-                        <Button type="submit" disabled={loading}>{loading ? 'Posting...' : 'Post Announcement'}</Button>
+                        <div className="form-group">
+                            <input
+                                type="text"
+                                placeholder="Title"
+                                value={newAnnouncement.title}
+                                onChange={(e) => setNewAnnouncement({ ...newAnnouncement, title: e.target.value })}
+                                className="form-input"
+                            />
+                        </div>
+                        <div className="form-group">
+                            <textarea
+                                placeholder="Content"
+                                value={newAnnouncement.content}
+                                onChange={(e) => setNewAnnouncement({ ...newAnnouncement, content: e.target.value })}
+                                className="form-input"
+                                rows="4"
+                            />
+                        </div>
+                        <Button type="submit" disabled={loading}>
+                            {loading ? 'Posting...' : 'Post Announcement'}
+                        </Button>
                     </form>
 
-                    {/* ** NEW SECTION TO LIST AND DELETE ANNOUNCEMENTS ** */}
                     <div className="announcement-list">
                         <h4>Existing Announcements</h4>
                         <table className="data-table">
                             <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Title</th>
-                                    <th>Actions</th>
-                                </tr>
+                                <tr><th>Date</th><th>Title</th><th>Actions</th></tr>
                             </thead>
                             <tbody>
                                 {announcements.map(ann => (
                                     <tr key={ann.id}>
-                                        <td>{ann.date?.toDate().toLocaleDateString()}</td>
+                                        <td>{formatDate(ann.date)}</td>
                                         <td>{ann.title}</td>
-                                        <td className="actions-cell">
+                                        <td>
                                             <button onClick={() => handleDeleteAnnouncement(ann.id)} className="action-btn action-btn--deny">Delete</button>
                                         </td>
                                     </tr>
@@ -147,20 +178,86 @@ export default function AdminDashboard() {
                     </div>
                 </DashboardSection>
 
-                <DashboardSection title="Manage Document Requests">
+               <DashboardSection title="Document Requests">
+    <table className="data-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Resident</th>
+                <th>Document</th>
+                <th>Purpose</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {documentRequests.map(req => (
+                <tr key={req.id}>
+                    <td>{formatDate(req.submittedAt)}</td>
+                    <td>{fallbackEmail(req)}</td>
+                    <td>{req.documentType || '—'}</td> {/* ← SHOWS DOC TYPE */}
+                    <td>{req.purpose || '—'}</td>      {/* ← SHOWS PURPOSE */}
+                    <td>
+                        <span className={`status-badge status--${req.status?.toLowerCase().replace(' ', '-')}`}>
+                            {req.status || '—'}
+                        </span>
+                    </td>
+                    <td className="actions-cell">
+                        {req.status === 'Pending' && (
+                            <>
+                                <button
+                                    onClick={() => handleUpdateRequestStatus(req.id, 'Ready for Pick-up')}
+                                    className="action-btn action-btn--approve"
+                                >
+                                    Approve
+                                </button>
+                                <button
+                                    onClick={() => handleUpdateRequestStatus(req.id, 'Denied')}
+                                    className="action-btn action-btn--deny"
+                                >
+                                    Deny
+                                </button>
+                            </>
+                        )}
+                    </td>
+                </tr>
+            ))}
+        </tbody>
+    </table>
+</DashboardSection>
+
+
+              <DashboardSection title="Incident Reports">
+    <table className="data-table">
+        <thead>
+            <tr><th>Date</th><th>Resident</th><th>Location</th><th>Description</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+            {incidentReports.map(report => (
+                <tr key={report.id}>
+                    <td>{formatDate(report.submittedAt)}</td>
+                    <td>{fallbackEmail(report)}</td>
+                    <td>{report.location || '—'}</td>
+                    <td>{report.description || '—'}</td>
+                </tr>
+            ))}
+        </tbody>
+    </table>
+</DashboardSection>
+
+
+                <DashboardSection title="Suggestions">
                     <table className="data-table">
-                        <thead><tr><th>Date</th><th>Resident</th><th>Document</th><th>Status</th><th>Actions</th></tr></thead>
+                        <thead>
+                            <tr><th>Date</th><th>Resident</th><th>Subject</th><th>Suggestion</th></tr>
+                        </thead>
                         <tbody>
-                            {documentRequests.map(req => (
-                                <tr key={req.id}>
-                                    <td>{req.submittedAt?.toDate().toLocaleDateString()}</td>
-                                    <td>{req.userEmail}</td>
-                                    <td>{req.documentType}</td>
-                                    <td><span className={`status-badge status--${req.status.toLowerCase().replace(' ', '-')}`}>{req.status}</span></td>
-                                    <td className="actions-cell">
-                                        <button onClick={() => handleUpdateRequestStatus(req.id, 'Ready for Pick-up')} className="action-btn action-btn--approve">Approve</button>
-                                        <button onClick={() => handleUpdateRequestStatus(req.id, 'Denied')} className="action-btn action-btn--deny">Deny</button>
-                                    </td>
+                            {suggestions.map(suggestion => (
+                                <tr key={suggestion.id}>
+                                    <td>{formatDate(suggestion.submittedAt)}</td>
+                                    <td>{fallbackEmail(suggestion)}</td>
+                                    <td>{suggestion.subject || '—'}</td>
+                                    <td>{suggestion.suggestion || '—'}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -170,4 +267,3 @@ export default function AdminDashboard() {
         </div>
     );
 }
-

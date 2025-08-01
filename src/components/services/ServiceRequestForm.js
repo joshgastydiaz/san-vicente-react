@@ -3,7 +3,7 @@ import { db } from '../../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
-import '../../styles/pages/service-request-form.scss'; // ← Import the SCSS here
+import '../../styles/pages/service-request-form.scss';
 
 export default function ServiceRequestForm({ user, serviceTitle, collectionName, fields, setPage }) {
     const [loading, setLoading] = useState(false);
@@ -13,23 +13,33 @@ export default function ServiceRequestForm({ user, serviceTitle, collectionName,
         e.preventDefault();
         setLoading(true);
         setError('');
+
         const formData = {};
-        fields.forEach(field => {
-            formData[field.name] = e.target[field.name].value;
-        });
+
         try {
+            // Extract and validate each field
+            fields.forEach(field => {
+                const value = e.target[field.name].value.trim();
+                if (!value) {
+                    throw new Error(`Please fill in the "${field.label}" field.`);
+                }
+                formData[field.name] = value;
+            });
+
+            // Submit to Firestore
             await addDoc(collection(db, collectionName), {
                 ...formData,
-                userId: user.uid,
-                userEmail: user.email,
+                userId: user.uid || '',
+                userEmail: user.email || '',
                 status: 'Pending',
                 submittedAt: serverTimestamp()
             });
+
             alert(`Your ${serviceTitle.toLowerCase()} has been submitted successfully!`);
             setPage('profile');
         } catch (err) {
-            setError('Failed to submit request. Please try again.');
-            console.error(err);
+            setError(err.message || 'Failed to submit request. Please try again.');
+            console.error('Submission Error:', err);
         } finally {
             setLoading(false);
         }
@@ -47,7 +57,10 @@ export default function ServiceRequestForm({ user, serviceTitle, collectionName,
                                 <textarea id={field.name} name={field.name} rows="4" required />
                             ) : field.type === 'select' ? (
                                 <select id={field.name} name={field.name} required>
-                                    {field.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                                    <option value="">Select an option</option>
+                                    {field.options.map(opt => (
+                                        <option key={opt} value={opt}>{opt}</option>
+                                    ))}
                                 </select>
                             ) : (
                                 <input type={field.type} id={field.name} name={field.name} required />

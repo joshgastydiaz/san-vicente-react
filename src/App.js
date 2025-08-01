@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { auth } from './firebase'; 
+import { auth, db } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 
 import Header from './components/common/Header';
 import Footer from './components/common/Footer';
@@ -12,7 +13,8 @@ import ContactUsPage from './pages/ContactUsPage';
 import AuthPage from './components/auth/Authpage';
 import UserProfilePage from './pages/UserProfilePage';
 import ServiceRequestForm from './components/services/ServiceRequestForm';
-import AdminDashboard from './components/admin/AdminDashboard';
+import AdminDashboardPage from './pages/AdminDashboardPage';
+
 import './index.scss';
 
 export default function App() {
@@ -25,20 +27,36 @@ export default function App() {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
                 setCurrentUser(user);
-                if (user.email === 'josh_admin@sanvicente.com') {
-                    setUserType('admin');
-                } else {
+                try {
+                    const userDocRef = doc(db, 'users', user.uid);
+                    const userDocSnap = await getDoc(userDocRef);
+                    if (userDocSnap.exists()) {
+                        const userData = userDocSnap.data();
+                        const role = userData.type || 'resident';
+                        setUserType(role);
+
+                        // ✅ Automatically go to admin dashboard if admin
+                        if (role === 'admin') {
+                            setPage('adminDashboard');
+                        }
+                    } else {
+                        setUserType('resident');
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch user role:', error);
                     setUserType('resident');
                 }
             } else {
                 setCurrentUser(null);
                 setUserType('resident');
+                setPage('home'); // fallback to home on logout
             }
             setLoading(false);
         });
+
         return () => unsubscribe();
     }, []);
-    
+
     useEffect(() => {
         window.scrollTo(0, 0);
     }, [page]);
@@ -50,31 +68,73 @@ export default function App() {
     const renderPage = () => {
         const isLoggedIn = !!currentUser;
         switch (page) {
-            case 'home': return <HomePage setPage={setPage} />;
-            case 'about': return <AboutUsPage />;
-            case 'services': return <ServicesPage setPage={setPage} loggedIn={isLoggedIn} />;
-            case 'announcements': return <AnnouncementsPage />;
-            case 'contact': return <ContactUsPage />;
-            
-            case 'login': return <AuthPage setPage={setPage} />;
-            
+            case 'home':
+                return <HomePage setPage={setPage} />;
+            case 'about':
+                return <AboutUsPage />;
+            case 'services':
+                return <ServicesPage setPage={setPage} loggedIn={isLoggedIn} />;
+            case 'announcements':
+                return <AnnouncementsPage />;
+            case 'contact':
+                return <ContactUsPage />;
+            case 'login':
+                return <AuthPage setPage={setPage} />;
             case 'profile':
-                return isLoggedIn ? <UserProfilePage user={currentUser} /> : <AuthPage setPage={setPage} />;
+                return isLoggedIn
+                    ? <UserProfilePage user={currentUser} />
+                    : <AuthPage setPage={setPage} />;
             case 'requestDocument':
-                return isLoggedIn ? <ServiceRequestForm user={currentUser} serviceTitle="Request a Document" collectionName="documentRequests" fields={[{name: 'documentType', label: 'Document Type', type: 'select', options: ['Barangay Clearance', 'Certificate of Indigency']}, {name: 'purpose', label: 'Purpose', type: 'textarea'}]} setPage={setPage} /> : <AuthPage setPage={setPage} />;
+                return isLoggedIn
+                    ? (
+                        <ServiceRequestForm
+                            user={currentUser}
+                            serviceTitle="Request a Document"
+                            collectionName="documentRequests"
+                            fields={[
+                                { name: 'documentType', label: 'Document Type', type: 'select', options: ['Barangay Clearance', 'Certificate of Indigency'] },
+                                { name: 'purpose', label: 'Purpose', type: 'textarea' }
+                            ]}
+                            setPage={setPage}
+                        />
+                    )
+                    : <AuthPage setPage={setPage} />;
             case 'reportIncident':
-                return isLoggedIn ? <ServiceRequestForm user={currentUser} serviceTitle="Report an Incident" collectionName="incidentReports" fields={[{name: 'date', label: 'Date of Incident', type: 'date'}, {name: 'location', label: 'Location', type: 'text'}, {name: 'description', label: 'Description', type: 'textarea'}]} setPage={setPage} /> : <AuthPage setPage={setPage} />;
+                return isLoggedIn
+                    ? (
+                        <ServiceRequestForm
+                            user={currentUser}
+                            serviceTitle="Report an Incident"
+                            collectionName="incidentReports"
+                            fields={[
+                                { name: 'date', label: 'Date of Incident', type: 'date' },
+                                { name: 'location', label: 'Location', type: 'text' },
+                                { name: 'description', label: 'Description', type: 'textarea' }
+                            ]}
+                            setPage={setPage}
+                        />
+                    )
+                    : <AuthPage setPage={setPage} />;
             case 'submitSuggestion':
-                 return isLoggedIn ? <ServiceRequestForm user={currentUser} serviceTitle="Submit a Suggestion" collectionName="suggestions" fields={[{name: 'subject', label: 'Subject', type: 'text'}, {name: 'suggestion', label: 'Suggestion/Feedback', type: 'textarea'}]} setPage={setPage} /> : <AuthPage setPage={setPage} />;
-
-          
+                return isLoggedIn
+                    ? (
+                        <ServiceRequestForm
+                            user={currentUser}
+                            serviceTitle="Submit a Suggestion"
+                            collectionName="suggestions"
+                            fields={[
+                                { name: 'subject', label: 'Subject', type: 'text' },
+                                { name: 'suggestion', label: 'Suggestion/Feedback', type: 'textarea' }
+                            ]}
+                            setPage={setPage}
+                        />
+                    )
+                    : <AuthPage setPage={setPage} />;
             case 'adminDashboard':
-            return (isLoggedIn && userType === 'admin') 
-                 ? <AdminDashboard setPage={setPage} /> 
-                : <HomePage setPage={setPage} />;
+  return <AdminDashboardPage />;
 
-                
-            default: return <HomePage setPage={setPage} />;
+            default:
+                return <HomePage setPage={setPage} />;
         }
     };
 

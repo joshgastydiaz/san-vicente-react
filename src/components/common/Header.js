@@ -3,7 +3,6 @@ import { auth } from '../../firebase';
 import { signOut } from 'firebase/auth';
 import { Button } from './Button';
 
-// You can create a separate file for icons if you prefer
 const MenuIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
@@ -16,93 +15,84 @@ const CloseIcon = () => (
   </svg>
 );
 
+export default function Header({ setPage, currentUser }) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-export default function Header({ setPage, currentUser, userType }) {
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setPage('home');
+      setIsMenuOpen(false);
+    } catch (error) {
+      console.error("Error signing out: ", error);
+    }
+  };
 
-    const handleLogout = async () => {
-        try {
-            await signOut(auth);
-            setPage('home');
-            setIsMenuOpen(false);
-        } catch (error) {
-            console.error("Error signing out: ", error);
-        }
-    };
+  const navLinks = [
+    { name: 'Home', page: 'home' },
+    { name: 'About Us', page: 'about' },
+    { name: 'Services', page: 'services' },
+    { name: 'Announcements', page: 'announcements' },
+    { name: 'Contact', page: 'contact' },
+  ];
 
-    const navLinks = [
-        { name: 'Home', page: 'home' },
-        { name: 'About Us', page: 'about' },
-        { name: 'Services', page: 'services' },
-        { name: 'Announcements', page: 'announcements' },
-        { name: 'Contact', page: 'contact' },
-    ];
+  const handleNavClick = (page) => {
+    setPage(page);
+    setIsMenuOpen(false);
+  };
 
-    const handleNavClick = (page) => {
-        setPage(page);
-        setIsMenuOpen(false);
-    };
+  return (
+    <header className="header">
+      <div className="header__container">
+        <div className="header__brand">
+          <h1 onClick={() => handleNavClick('home')}>Brgy. San Vicente</h1>
+        </div>
 
-    // Note the new BEM-style class names like "header", "header__container", etc.
-    // You will need to create a `src/styles/components/_header.scss` file to style these.
-    return (
-        <header className="header">
-            <div className="header__container">
-                <div className="header__brand">
-                    <h1 onClick={() => handleNavClick('home')}>Brgy. San Vicente</h1>
-                </div>
-                
-                {/* Desktop Navigation */}
-                <nav className="header__nav--desktop">
-                    {navLinks.map(link => (
-                        <button key={link.name} onClick={() => handleNavClick(link.page)} className="header__nav-link">
-                            {link.name}
-                        </button>
-                    ))}
-                    {currentUser ? (
-                        <>
-                            {userType === 'admin' ? (
-                                <button onClick={() => handleNavClick('adminDashboard')} className="header__nav-link">Dashboard</button>
-                            ) : (
-                                <button onClick={() => handleNavClick('profile')} className="header__nav-link">Profile</button>
-                            )}
-                            <Button onClick={handleLogout} className="btn--danger">Logout</Button>
-                        </>
-                    ) : (
-                        <Button onClick={() => handleNavClick('login')}>Login</Button>
-                    )}
-                </nav>
+        {/* Desktop Navigation */}
+        <nav className="header__nav--desktop">
+          {navLinks.map(link => (
+            <button key={link.name} onClick={() => handleNavClick(link.page)} className="header__nav-link">
+              {link.name}
+            </button>
+          ))}
+          {currentUser ? (
+            <>
+              <button onClick={() => handleNavClick('adminDashboard')} className="header__nav-link">Dashboard</button>
+              <button onClick={() => handleNavClick('profile')} className="header__nav-link">Profile</button>
+              <Button onClick={handleLogout} className="btn--danger">Logout</Button>
+            </>
+          ) : (
+            <Button onClick={() => handleNavClick('login')}>Login</Button>
+          )}
+        </nav>
 
-                {/* Mobile Menu Toggle Button */}
-                <div className="header__menu-toggle">
-                    <button onClick={() => setIsMenuOpen(!isMenuOpen)}>
-                        {isMenuOpen ? <CloseIcon /> : <MenuIcon />}
-                    </button>
-                </div>
-            </div>
+        {/* Mobile Menu Toggle */}
+        <div className="header__menu-toggle">
+          <button onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            {isMenuOpen ? <CloseIcon /> : <MenuIcon />}
+          </button>
+        </div>
+      </div>
 
-            {/* Mobile Menu */}
-            {isMenuOpen && (
-                <nav className="header__nav--mobile">
-                    {navLinks.map(link => (
-                        <button key={link.name} onClick={() => handleNavClick(link.page)} className="header__nav-link--mobile">
-                            {link.name}
-                        </button>
-                    ))}
-                    {currentUser ? (
-                         <>
-                            {userType === 'admin' ? (
-                                <button onClick={() => handleNavClick('adminDashboard')} className="header__nav-link--mobile">Dashboard</button>
-                            ) : (
-                                <button onClick={() => handleNavClick('profile')} className="header__nav-link--mobile">Profile</button>
-                            )}
-                            <Button onClick={handleLogout} className="btn--danger btn--full-width">Logout</Button>
-                        </>
-                    ) : (
-                        <Button onClick={() => handleNavClick('login')} className="btn--full-width">Login</Button>
-                    )}
-                </nav>
-            )}
-        </header>
-    );
-};
+      {/* Mobile Navigation */}
+      {isMenuOpen && (
+        <nav className="header__nav--mobile">
+          {navLinks.map(link => (
+            <button key={link.name} onClick={() => handleNavClick(link.page)} className="header__nav-link--mobile">
+              {link.name}
+            </button>
+          ))}
+          {currentUser ? (
+            <>
+              <button onClick={() => handleNavClick('adminDashboard')} className="header__nav-link--mobile">Dashboard</button>
+              <button onClick={() => handleNavClick('profile')} className="header__nav-link--mobile">Profile</button>
+              <Button onClick={handleLogout} className="btn--danger btn--full-width">Logout</Button>
+            </>
+          ) : (
+            <Button onClick={() => handleNavClick('login')} className="btn--full-width">Login</Button>
+          )}
+        </nav>
+      )}
+    </header>
+  );
+}
