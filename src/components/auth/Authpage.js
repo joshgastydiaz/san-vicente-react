@@ -22,8 +22,7 @@ const getFriendlyAuthError = (errorCode) => {
     }
 };
 
-
-
+// This component correctly receives the { setPage } prop from App.js
 export default function AuthPage({ setPage }) {
     const [isLogin, setIsLogin] = useState(true);
     const [error, setError] = useState('');
