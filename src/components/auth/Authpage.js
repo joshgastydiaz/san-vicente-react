@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { auth, db } from '../../firebase'; 
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
@@ -6,6 +5,22 @@ import { setDoc, doc } from 'firebase/firestore';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 
+const getFriendlyAuthError = (errorCode) => {
+    switch (errorCode) {
+        case 'auth/invalid-email':
+            return 'Please enter a valid email address.';
+        case 'auth/user-not-found':
+        case 'auth/wrong-password':
+        case 'auth/invalid-credential':
+            return 'Incorrect email or password. Please try again.';
+        case 'auth/email-already-in-use':
+            return 'An account with this email address already exists.';
+        case 'auth/weak-password':
+            return 'Password should be at least 6 characters long.';
+        default:
+            return 'An unexpected error occurred. Please try again.';
+    }
+};
 
 export default function AuthPage({ setPage }) {
     const [isLogin, setIsLogin] = useState(true);
@@ -19,10 +34,16 @@ export default function AuthPage({ setPage }) {
         const email = e.target.email.value;
         const password = e.target.password.value;
         try {
-            await signInWithEmailAndPassword(auth, email, password);
-            setPage('home');
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            if (user.email === 'josh_admin@sanvicente.com') {
+                setPage('adminDashboard');
+            } else {
+                setPage('home');
+            }
         } catch (err) {
-            setError(err.message);
+            setError(getFriendlyAuthError(err.code));
         } finally {
             setLoading(false);
         }
@@ -49,7 +70,7 @@ export default function AuthPage({ setPage }) {
             alert("Registration successful! Please log in.");
             setIsLogin(true);
         } catch (err) {
-            setError(err.message);
+            setError(getFriendlyAuthError(err.code));
         } finally {
             setLoading(false);
         }

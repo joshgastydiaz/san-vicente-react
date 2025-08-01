@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { auth } from './firebase'; 
 import { onAuthStateChanged } from 'firebase/auth';
 
-// Imports updated to match your exact filenames
 import Header from './components/common/Header';
 import Footer from './components/common/Footer';
 import HomePage from './pages/HomePage';
@@ -14,7 +13,6 @@ import AuthPage from './components/auth/Authpage';
 import UserProfilePage from './pages/UserProfilePage';
 import ServiceRequestForm from './components/services/ServiceRequestForm';
 import AdminDashboard from './components/admin/AdminDashboard';
-// Import the main Sass stylesheet
 import './index.scss';
 
 export default function App() {
@@ -46,8 +44,7 @@ export default function App() {
     }, [page]);
 
     if (loading) {
-        // A simple loading indicator
-        return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Loading...</div>;
+        return <div className="loading-container">Loading...</div>;
     }
 
     const renderPage = () => {
@@ -58,7 +55,7 @@ export default function App() {
             case 'services': return <ServicesPage setPage={setPage} loggedIn={isLoggedIn} />;
             case 'announcements': return <AnnouncementsPage />;
             case 'contact': return <ContactUsPage />;
-            // This is the critical line: setPage={setPage} is passed as a prop
+            
             case 'login': return <AuthPage setPage={setPage} />;
             
             case 'profile':
@@ -70,6 +67,7 @@ export default function App() {
             case 'submitSuggestion':
                  return isLoggedIn ? <ServiceRequestForm user={currentUser} serviceTitle="Submit a Suggestion" collectionName="suggestions" fields={[{name: 'subject', label: 'Subject', type: 'text'}, {name: 'suggestion', label: 'Suggestion/Feedback', type: 'textarea'}]} setPage={setPage} /> : <AuthPage setPage={setPage} />;
 
+            // This is the security check. If you are not a logged-in admin, it sends you to the Home Page.
             case 'adminDashboard':
                 return (isLoggedIn && userType === 'admin') ? <AdminDashboard /> : <HomePage setPage={setPage} />;
             
@@ -78,7 +76,6 @@ export default function App() {
     };
 
     return (
-        // These class names can be styled in a new `_app.scss` file
         <div className="app-container">
             <Header setPage={setPage} currentUser={currentUser} userType={userType} />
             <main className="main-content">
