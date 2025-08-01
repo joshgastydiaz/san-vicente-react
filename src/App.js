@@ -23,39 +23,44 @@ export default function App() {
     const [userType, setUserType] = useState('resident');
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                setCurrentUser(user);
-                try {
-                    const userDocRef = doc(db, 'users', user.uid);
-                    const userDocSnap = await getDoc(userDocRef);
-                    if (userDocSnap.exists()) {
-                        const userData = userDocSnap.data();
-                        const role = userData.type || 'resident';
-                        setUserType(role);
 
-                        // ✅ Automatically go to admin dashboard if admin
-                        if (role === 'admin') {
-                            setPage('adminDashboard');
-                        }
-                    } else {
-                        setUserType('resident');
+    
+
+    useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            setCurrentUser(user);
+            try {
+                const userDocRef = doc(db, 'users', user.uid);
+                const userDocSnap = await getDoc(userDocRef);
+                if (userDocSnap.exists()) {
+                    const userData = userDocSnap.data();
+                    const role = userData.role || 'resident'; // ✅ Use .role instead of .type
+                    console.log("Detected user role from Firestore:", role); // ✅ Helpful debug
+                    setUserType(role);
+
+                    if (role === 'admin') {
+                        setPage('adminDashboard');
                     }
-                } catch (error) {
-                    console.error('Failed to fetch user role:', error);
+                } else {
+                    console.warn('User document does not exist in Firestore');
                     setUserType('resident');
                 }
-            } else {
-                setCurrentUser(null);
+            } catch (error) {
+                console.error('Failed to fetch user role:', error);
                 setUserType('resident');
-                setPage('home'); // fallback to home on logout
             }
-            setLoading(false);
-        });
+        } else {
+            setCurrentUser(null);
+            setUserType('resident');
+            setPage('home');
+        }
+        setLoading(false);
+    });
 
-        return () => unsubscribe();
-    }, []);
+    return () => unsubscribe();
+}, []);
+
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -131,8 +136,9 @@ export default function App() {
                     )
                     : <AuthPage setPage={setPage} />;
             case 'adminDashboard':
-  return <AdminDashboardPage />;
-
+                return isLoggedIn && userType === 'admin'
+                    ? <AdminDashboardPage setPage={setPage} />
+                    : <HomePage setPage={setPage} />;
             default:
                 return <HomePage setPage={setPage} />;
         }

@@ -2,16 +2,22 @@
   background-color: #f9fafb;
   font-family: 'Inter', sans-serif;
 
-  .container {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 2rem 1rem;
-  }
+ .container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1rem 0.1rem; // less horizontal padding
+}
+
 
   .hero {
-    background-color: #fff;
-    padding-top: 4rem;
-    padding-bottom: 4rem;
+  background-color: #fff;
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); // more prominent shadow
+  border-radius: 1rem; // optional: softens corners for a card-like look
+ margin-bottom: 2rem;
+
+
 
     .hero-content {
       display: flex;
@@ -26,7 +32,13 @@
     }
 
     .hero-text {
-      text-align: center;
+ .hero-text {
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
 
       @media (min-width: 1024px) {
         text-align: left;
@@ -96,19 +108,31 @@
       }
     }
 
-    .hero-image {
-      max-width: 500px;
-      width: 100%;
-      flex: 1;
+.hero-image {
+  max-width: 500px;
+  width: 100%;
+  flex: 1;
+ padding: 1rem;
+  img {
+    width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+    object-fit: cover;
 
-      img {
-        width: 100%;
-        height: auto;
-        border-left: 4px solid #3b82f6;
-        border-radius: 0.5rem;
-        object-fit: cover;
-      }
-    }
+    // Add these:
+    transition: opacity 1s ease-in-out;
+    opacity: 1;
+  }
+
+  // Optional: fade-out class for smoother change
+  .fade-out {
+    opacity: 0;
+  }
+
+
+
+}
+
   }
 
   .announcements {

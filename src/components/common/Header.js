@@ -15,7 +15,7 @@ const CloseIcon = () => (
   </svg>
 );
 
-export default function Header({ setPage, currentUser }) {
+export default function Header({ setPage, currentUser, userType }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -36,61 +36,113 @@ export default function Header({ setPage, currentUser }) {
     { name: 'Contact', page: 'contact' },
   ];
 
-  const handleNavClick = (page) => {
-    setPage(page);
+  const handleNavClick = (pageName) => {
+    setPage(pageName);
     setIsMenuOpen(false);
   };
 
   return (
-    <header className="header">
-      <div className="header__container">
-        <div className="header__brand">
-          <h1 onClick={() => handleNavClick('home')}>Brgy. San Vicente</h1>
+    <header className="header bg-white shadow-md">
+      <div className="header__container flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
+        
+        {/* Brand + Logo */}
+        <div 
+          className="header__brand flex items-center gap-2 cursor-pointer" 
+          onClick={() => handleNavClick('home')}
+        >
+       <img src="/logo.png" alt="Brgy Logo" style={{ height: '50px', width: '50px' }} className="object-contain" />
+
+
+          <h1 className="text-2xl font-bold text-gray-800">Barangay San Vicente</h1>
         </div>
 
-        {/* Desktop Navigation */}
-        <nav className="header__nav--desktop">
+        {/* Desktop Nav */}
+        <nav className="header__nav--desktop hidden md:flex items-center gap-4">
           {navLinks.map(link => (
-            <button key={link.name} onClick={() => handleNavClick(link.page)} className="header__nav-link">
+            <button 
+              key={link.name} 
+              onClick={() => handleNavClick(link.page)} 
+              className="header__nav-link text-gray-700 hover:text-blue-600"
+            >
               {link.name}
             </button>
           ))}
+
           {currentUser ? (
             <>
-              <button onClick={() => handleNavClick('adminDashboard')} className="header__nav-link">Dashboard</button>
-              <button onClick={() => handleNavClick('profile')} className="header__nav-link">Profile</button>
-              <Button onClick={handleLogout} className="btn--danger">Logout</Button>
+              {userType === 'admin' && (
+                <button 
+                  onClick={() => handleNavClick('adminDashboard')} 
+                  className="header__nav-link text-gray-700 hover:text-blue-600"
+                >
+                  Dashboard
+                </button>
+              )}
+              <button 
+                onClick={() => handleNavClick('profile')} 
+                className="header__nav-link text-gray-700 hover:text-blue-600"
+              >
+                Profile
+              </button>
+              <Button onClick={handleLogout} className="btn--danger ml-2">
+                Logout
+              </Button>
             </>
           ) : (
-            <Button onClick={() => handleNavClick('login')}>Login</Button>
+            <Button onClick={() => handleNavClick('login')} className="ml-2">
+              Login
+            </Button>
           )}
         </nav>
 
-        {/* Mobile Menu Toggle */}
-        <div className="header__menu-toggle">
+        {/* Mobile Toggle */}
+        <div className="md:hidden header__menu-toggle">
           <button onClick={() => setIsMenuOpen(!isMenuOpen)}>
             {isMenuOpen ? <CloseIcon /> : <MenuIcon />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Navigation */}
+      {/* Mobile Menu */}
       {isMenuOpen && (
-        <nav className="header__nav--mobile">
-          {navLinks.map(link => (
-            <button key={link.name} onClick={() => handleNavClick(link.page)} className="header__nav-link--mobile">
-              {link.name}
-            </button>
-          ))}
-          {currentUser ? (
-            <>
-              <button onClick={() => handleNavClick('adminDashboard')} className="header__nav-link--mobile">Dashboard</button>
-              <button onClick={() => handleNavClick('profile')} className="header__nav-link--mobile">Profile</button>
-              <Button onClick={handleLogout} className="btn--danger btn--full-width">Logout</Button>
-            </>
-          ) : (
-            <Button onClick={() => handleNavClick('login')} className="btn--full-width">Login</Button>
-          )}
+        <nav className="header__nav--mobile bg-white shadow-inner md:hidden">
+          <div className="flex flex-col gap-2 px-6 py-4">
+            {navLinks.map(link => (
+              <button 
+                key={link.name} 
+                onClick={() => handleNavClick(link.page)} 
+                className="header__nav-link--mobile text-left text-gray-700 hover:text-blue-600"
+              >
+                {link.name}
+              </button>
+            ))}
+
+            {currentUser ? (
+              <>
+                {userType === 'admin' && (
+                  <button 
+                    onClick={() => handleNavClick('adminDashboard')} 
+                    className="header__nav-link--mobile text-left text-gray-700 hover:text-blue-600"
+                  >
+                    Dashboard
+                  </button>
+                )}
+                <button 
+                  onClick={() => handleNavClick('profile')} 
+                  className="header__nav-link--mobile text-left text-gray-700 hover:text-blue-600"
+                >
+                  Profile
+                </button>
+                <Button onClick={handleLogout} className="btn--danger btn--full-width mt-2">
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <Button onClick={() => handleNavClick('login')} className="btn--full-width mt-2">
+                Login
+              </Button>
+            )}
+          </div>
         </nav>
       )}
     </header>

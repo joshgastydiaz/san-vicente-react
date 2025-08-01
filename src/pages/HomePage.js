@@ -8,6 +8,18 @@ export default function HomePage({ setPage }) {
     const [latestAnnouncements, setLatestAnnouncements] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    // ⏱ Slideshow state
+    const heroImages = ["/brgy1.jpg", "/brgy2.jpg", "/brgy3.jpg"]; 
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentIndex((prevIndex) => (prevIndex + 1) % heroImages.length);
+        }, 3000); 
+
+        return () => clearInterval(interval);
+    }, []);
+
     useEffect(() => {
         const q = query(collection(db, "announcements"), orderBy("date", "desc"), limit(3));
 
@@ -48,8 +60,9 @@ export default function HomePage({ setPage }) {
                     </div>
                     <div className="hero-image">
                         <img
-                            src="https://placehold.co/1000x800/3B82F6/FFFFFF?text=Insert+Image"
-                            alt="Barangay Hall"
+                            src={heroImages[currentIndex]}
+                            alt="Barangay Slideshow"
+                            className="hero-slide"
                         />
                     </div>
                 </div>

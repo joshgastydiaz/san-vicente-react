@@ -1,86 +1,42 @@
-import React, { useState, useEffect } from 'react';
-import { db } from '../firebase'; 
-import { collection, query, onSnapshot, orderBy, limit } from 'firebase/firestore';
-import { Card as HomeCard } from '../components/common/Card';
-import { Button as HomeButton } from '../components/common/Button';
+import React from 'react';
 
-export default function HomePage({ setPage }) {
-    const [latestAnnouncements, setLatestAnnouncements] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const q = query(collection(db, "announcements"), orderBy("date", "desc"), limit(3));
-        
-        const unsubscribe = onSnapshot(q, (querySnapshot) => {
-            const announcementsData = [];
-            querySnapshot.forEach((doc) => {
-                announcementsData.push({ ...doc.data(), id: doc.id });
-            });
-            setLatestAnnouncements(announcementsData);
-            setLoading(false);
-        });
-
-        return () => unsubscribe();
-    }, []);
-
+export default function ContactPage() {
     return (
-        <div className="bg-gray-50">
-            <div className="relative bg-white overflow-hidden">
+        <div className="bg-gray-50 min-h-screen">
+            {/* Hero Section */}
+            <div className="relative bg-white overflow-hidden shadow-xl mt-10 mx-4 md:mx-12 lg:mx-24 rounded-2xl">
                 <div className="max-w-7xl mx-auto">
-                    <div className="relative z-10 pb-8 bg-white sm:pb-16 md:pb-20 lg:max-w-2xl lg:w-full lg:pb-28 xl:pb-32">
-                        <main className="mt-10 mx-auto max-w-7xl px-4 sm:mt-12 sm:px-6 md:mt-16 lg:mt-20 lg:px-8 xl:mt-28">
-                            <div className="sm:text-center lg:text-left">
-                                <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
-                                    <span className="block xl:inline">Welcome to</span>{' '}
-                                    <span className="block text-blue-600 xl:inline">Brgy. San Vicente</span>
-                                </h1>
-                                <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
-                                    Your centralized hub for barangay services, announcements, and community engagement. We are committed to providing transparent and efficient public service.
-                                </p>
-                                <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
-                                    <div className="rounded-md shadow">
-                                        <button onClick={() => setPage('services')} className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10">
-                                            Explore Services
-                                        </button>
-                                    </div>
-                                    <div className="mt-3 sm:mt-0 sm:ml-3">
-                                        <button onClick={() => setPage('about')} className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 md:py-4 md:text-lg md:px-10">
-                                            Learn More
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </main>
+                    <div className="relative z-10 py-12 sm:py-16 md:py-20 lg:py-28 xl:py-32 px-6 sm:px-8 lg:px-12 text-center">
+                        <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
+                            <span className="block">Contact Us!  </span>
+                            <span className="block text-blue-600">Barangay San Vicente</span>
+                        </h1>
+                        <p className="mt-6 text-lg text-gray-600 max-w-2xl mx-auto">
+                            We’re here to help. For any questions, assistance, or concerns regarding services and community matters in Barangay San Vicente, Quezon Province, please reach out through the following:
+                        </p>
+                        <div className="mt-8 text-gray-700 space-y-3 text-base max-w-md mx-auto">
+                            <p><strong>📍 Address:</strong> Barangay Hall, San Vicente, Gumaca, Quezon, Philippines</p>
+                            <p><strong>📧 Email:</strong> brgy.sanvicente.quezon@gmail.com</p>
+                            <p><strong>📞 Phone:</strong> (042) 123-4567</p>
+                            <p><strong>⏰ Office Hours:</strong> Monday to Friday, 8:00 AM – 5:00 PM</p>
+                        </div>
                     </div>
-                </div>
-                <div className="lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2">
-                    <img className="h-56 w-full object-cover sm:h-72 md:h-96 lg:w-full lg:h-full" src="https://placehold.co/1000x800/3B82F6/FFFFFF?text=Barangay+Hall" alt="Barangay Hall" />
                 </div>
             </div>
-            <div className="py-12 bg-gray-50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="lg:text-center">
-                        <h2 className="text-base text-blue-600 font-semibold tracking-wide uppercase">News & Updates</h2>
-                        <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-                            Latest Announcements
-                        </p>
-                    </div>
-                    <div className="mt-10">
-                        {loading ? (
-                            <p className="text-center">Loading latest announcements...</p>
-                        ) : (
-                            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                                {latestAnnouncements.map((announcement) => (
-                                    <HomeCard key={announcement.id}>
-                                        <h3 className="text-xl font-bold text-gray-900">{announcement.title}</h3>
-                                        <p className="text-sm text-gray-500 mt-1">{announcement.date?.toDate().toLocaleDateString()}</p>
-                                        <p className="mt-4 text-gray-600 truncate">{announcement.content}</p>
-                                        <HomeButton onClick={() => setPage('announcements')} className="mt-6 w-full">Read More</HomeButton>
-                                    </HomeCard>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+
+            {/* Map Section */}
+            <div className="mt-12 px-4 md:px-12 lg:px-24 pb-12">
+                <div className="overflow-hidden rounded-2xl shadow-lg">
+                    <iframe
+                        title="Barangay San Vicente Map"
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3879.719662186002!2d122.10135967494197!3d13.946381492273335!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x33bd5150db8e6319%3A0xe0a5f96e190f5f64!2sSan%20Vicente%2C%20Gumaca%2C%20Quezon!5e0!3m2!1sen!2sph!4v1694504920792!5m2!1sen!2sph"
+                        width="100%"
+                        height="450"
+                        allowFullScreen=""
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                        className="w-full h-[450px] border-0"
+                    ></iframe>
                 </div>
             </div>
         </div>

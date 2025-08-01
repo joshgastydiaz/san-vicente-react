@@ -10,11 +10,36 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
   }
 
-  &__brand h1 {
-    font-size: 1.5rem;
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
     cursor: pointer;
+
+    img {
+      height: 40px;
+      width: 40px;
+      object-fit: contain;
+
+      @media (min-width: 768px) {
+        height: 48px;
+        width: 48px;
+      }
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #333;
+
+      @media (min-width: 768px) {
+        font-size: 1.75rem;
+      }
+    }
   }
 
   &__nav--desktop {

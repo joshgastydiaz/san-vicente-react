@@ -1,0 +1,67 @@
+.contact-page {
+  background-color: #f9fafb; // Tailwind gray-50
+  min-height: 100vh;
+  padding: 3rem 1rem;
+
+  .contact-container {
+    max-width: 64rem; // Tailwind max-w-4xl
+    margin: 0 auto;
+    background: #ffffff; // white
+    border-radius: 1rem; // Tailwind rounded-2xl
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); // soft shadow
+    padding: 2.5rem;
+
+    h2 {
+      font-size: 1.875rem; // text-3xl
+      font-weight: 800;
+      color: #2563eb; // Tailwind blue-600
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    p.intro {
+      font-size: 1.125rem; // text-lg
+      color: #374151; // Tailwind gray-700
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+
+      @media (min-width: 768px) {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      gap: 2rem;
+
+      h3 {
+        font-size: 1.25rem; // text-xl
+        font-weight: 600;
+        color: #1f2937; // Tailwind gray-800
+        margin-bottom: 0.5rem;
+      }
+
+      p {
+        color: #4b5563; // Tailwind gray-600
+        line-height: 1.6;
+
+        &.highlight {
+          margin-top: 1rem;
+        }
+      }
+    }
+
+    .map {
+      margin-top: 2.5rem;
+
+      iframe {
+        width: 100%;
+        height: 350px;
+        border: none;
+        border-radius: 0.75rem; // Tailwind rounded-xl
+      }
+    }
+  }
+}
